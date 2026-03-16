@@ -1,14 +1,19 @@
 package chess.pieces;
 
+
 import boardgame.Board;
 import boardgame.Position;
+import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Collor;
 
 public class King extends ChessPiece {
 
-	public King(Board board, Collor color) {
+	private ChessMatch chessMatch;
+	
+	public King(Board board, Collor color, ChessMatch chessMatch) {
 		super(board, color);
+		this.chessMatch = chessMatch;
 	}
 
 	@Override
@@ -69,11 +74,41 @@ public class King extends ChessPiece {
 		if (getBoard().positionExists(p) && canMove(p)) {
 			mat[p.getRow()][p.getColumn()] = true;
 		}
+		
+		//special move castling
+		if(moveCount == 0 && !chessMatch.getCheck()) {
+			//king castling
+			Position posiK = new Position(position.getRow(), position.getColumn() + 3);
+			if(testRook(posiK)) {
+				Position po1 = new Position(position.getRow(), position.getColumn() + 1);
+				Position po2 = new Position(position.getRow(), position.getColumn() + 2);
+				if(getBoard().piece(po1) == null && getBoard().piece(po2) == null) {
+					mat[position.getRow()][position.getColumn() + 2] = true;
+				}
+
+			}
+			//queen castling
+			Position posiQ = new Position(position.getRow(), position.getColumn() - 4);
+			if(testRook(posiQ)) {
+				Position po1 = new Position(position.getRow(), position.getColumn() - 1);
+				Position po2 = new Position(position.getRow(), position.getColumn() - 2);
+				Position po3 = new Position(position.getRow(), position.getColumn() - 3);
+				if(getBoard().piece(po1) == null && getBoard().piece(po2) == null && getBoard().piece(po3) == null) {
+					mat[position.getRow()][position.getColumn() - 2] = true;
+				}
+
+			}
+		}
 		return mat;
 	}
 
 	private boolean canMove(Position position) {
 		ChessPiece p = (ChessPiece) getBoard().piece(position);
 		return p == null || p.getColor() != getColor();
+	}
+	
+	private boolean testRook(Position position) {
+		ChessPiece p = (ChessPiece) getBoard().piece(position);
+		return p != null && p instanceof Rook && p.getColor() == getColor() && p.getMoveCount() == 0;
 	}
 }
