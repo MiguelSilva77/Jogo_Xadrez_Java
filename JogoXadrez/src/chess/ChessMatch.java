@@ -25,6 +25,8 @@ public class ChessMatch {
 	private boolean check;
 	private boolean checkMate;
 	private ChessPiece enPassantVunerable;
+	private ChessPiece promoted;
+	
 	public ChessMatch() {
 		board = new Board(8, 8);
 		turn = 1;
@@ -62,6 +64,10 @@ public class ChessMatch {
 	public ChessPiece getEnPassantVunerable() {
 		return enPassantVunerable;
 	}
+	
+	public ChessPiece getPromoted() {
+		return promoted;
+	}
 
 	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
 		Position position = sourcePosition.toPosition();
@@ -89,6 +95,15 @@ public class ChessMatch {
 			throw new ChessException("you can´t put check in yourselfe");
 		}
 		
+		//special move promotion
+			promoted = null;
+		if(movedPiece instanceof Pawn) {
+			if(movedPiece.getColor() == Collor.WHITE && target.getRow() == 0 || movedPiece.getColor() == Collor.BLACK && target.getRow() == 7) {
+				promoted = (ChessPiece)board.piece(target);
+				promoted = replacePromotedPiece("Q");
+			}
+		}
+		
 		check = (testCheck(opponent(currentPlayer))) ? true : false;
 		
 		if(testCheckMate(opponent(currentPlayer))) {
@@ -98,6 +113,34 @@ public class ChessMatch {
 		}
 		return (ChessPiece) capturedPiece;
 	}
+	
+	public ChessPiece replacePromotedPiece (String type) {
+		if(promoted == null) {
+			throw new ChessException("There is no piece to be promoted");
+		}
+		if(!type.equals("Q") && !type.equals("B") && !type.equals("M") && !type.equals("R") ) {
+			throw new ChessException("Invalid type for promotion");
+		}
+		
+		Position pos = promoted.getChessPosition().toPosition();
+		Piece p = board.removePiece(pos);
+		piecesOnTheBoard.remove(p);
+		
+		ChessPiece newPiece = newPiece(type, promoted.getColor());
+		board.placePiece(newPiece, pos);
+		piecesOnTheBoard.add(newPiece);
+		
+		return newPiece;
+	}
+	
+	private ChessPiece newPiece(String type, Collor collor) {
+		if(type.equals("B")) return new Bishop(board,collor);
+		if(type.equals("Q")) return new Queen(board,collor);
+		if(type.equals("M")) return new Knight(board,collor);
+		return new Rook(board,collor);
+		}
+	
+		
 
 	private void validateSourcePosition(Position position) {
 		if (!board.thereIsAPiece(position)) {
@@ -119,7 +162,7 @@ public class ChessMatch {
 
 	private void nextTurn() {
 		turn++;
-		currentPlayer = (currentPlayer == Collor.WHITE) ? Collor.BLACK : Collor.WHITE;
+		//currentPlayer = (currentPlayer == Collor.WHITE) ? Collor.BLACK : Collor.WHITE;
 	}
 
 	private Piece makeMove(Position source, Position target) {
