@@ -119,7 +119,7 @@ public class ChessMatch {
 			throw new ChessException("There is no piece to be promoted");
 		}
 		if(!type.equals("Q") && !type.equals("B") && !type.equals("M") && !type.equals("R") ) {
-			throw new ChessException("Invalid type for promotion");
+			return promoted;
 		}
 		
 		Position pos = promoted.getChessPosition().toPosition();
@@ -162,7 +162,7 @@ public class ChessMatch {
 
 	private void nextTurn() {
 		turn++;
-		//currentPlayer = (currentPlayer == Collor.WHITE) ? Collor.BLACK : Collor.WHITE;
+		currentPlayer = (currentPlayer == Collor.WHITE) ? Collor.BLACK : Collor.WHITE;
 	}
 
 	private Piece makeMove(Position source, Position target) {
